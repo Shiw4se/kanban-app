@@ -18,8 +18,7 @@ export const KanbanBoard: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        // Не забудь проверить, что тут стоит ТВОЙ актуальный ID (который ты получил в консоли)
-        const demoId = 'e7f8g9h0'; // <--- ПРОВЕРЬ ЭТОТ ID
+        const demoId = 'e7f8g9h0';
         dispatch(fetchBoard(demoId));
     }, [dispatch]);
 
@@ -27,9 +26,6 @@ export const KanbanBoard: React.FC = () => {
         const { source, destination, draggableId } = result;
         if (!destination) return;
         if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-
-        // Если включен поиск, Drag-and-Drop лучше блокировать или быть осторожным,
-        // так как позиции (index) в отфильтрованном списке не совпадают с реальными.
         if (searchQuery) return;
 
         dispatch(moveTaskOptimistic({
@@ -45,13 +41,12 @@ export const KanbanBoard: React.FC = () => {
         }));
     };
 
-    // Функция добавления новой задачи (по умолчанию в "To Do")
     const handleAddNewCard = () => {
         const title = prompt('Enter task title:');
         if (title && boardId) {
             dispatch(createTask({
                 title,
-                status: 'todo', // Всегда добавляем в первую колонку
+                status: 'todo',
                 boardId,
                 order: tasks.filter(t => t.status === 'todo').length
             }));
@@ -59,16 +54,12 @@ export const KanbanBoard: React.FC = () => {
     };
 
     if (!boardId && !hashedId) return <div style={{padding: 20}}>Loading...</div>;
-
-    // 2. Логика фильтрации
-    // Мы фильтруем задачи, но не меняем их в Redux, только визуально
     const filteredTasks = tasks.filter(task =>
         task.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
         <div className="app-layout">
-            {/* 3. Верхняя панель */}
             <div className="top-bar">
                 <h3 style={{ marginRight: 'auto', color: '#172b4d' }}>Kanban Board</h3>
 
@@ -98,7 +89,6 @@ export const KanbanBoard: React.FC = () => {
                                     <div className="column-header">
                                         {column.title}
                                         <span>
-                      {/* Считаем количество отфильтрованных задач */}
                                             {filteredTasks.filter(t => t.status === column.id).length}
                     </span>
                                     </div>
@@ -112,7 +102,6 @@ export const KanbanBoard: React.FC = () => {
                                                     key={task.id}
                                                     draggableId={task.id}
                                                     index={index}
-                                                    // Блокируем перетаскивание, если работает поиск (чтобы не сломать сортировку)
                                                     isDragDisabled={!!searchQuery}
                                                 >
                                                     {(provided, snapshot) => (

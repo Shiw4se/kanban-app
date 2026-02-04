@@ -19,9 +19,9 @@ html, body {
   background-color: #f4f5f7;
 }
 
-/* 3. Верхняя панель (Стильная) */
+
 .top-bar {
-  height: 60px; /* Фиксированная высота */
+  height: 60px;
   min-height: 60px;
   background-color: #ffffff;
   border-bottom: 1px solid #dfe1e6;
@@ -30,7 +30,7 @@ html, body {
   align-items: center;
   gap: 16px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  z-index: 10; /* Чтобы тень была поверх контента */
+  z-index: 10;
 }
 
 /* Заголовок */
@@ -41,7 +41,7 @@ html, body {
   font-weight: 600;
 }
 
-/* Поиск (Красивый инпут) */
+
 .search-input {
   padding: 8px 12px;
   width: 280px;
@@ -56,11 +56,11 @@ html, body {
 
 .search-input:focus {
   background-color: #fff;
-  border-color: #0079bf; /* Синий цвет при фокусе */
+  border-color: #0079bf;
   box-shadow: 0 0 0 3px rgba(0, 121, 191, 0.1);
 }
 
-/* Кнопка (Primary стиль) */
+
 .primary-btn {
   background-color: #0079bf;
   color: white;
@@ -78,27 +78,27 @@ html, body {
   background-color: #026aa7;
 }
 
-/* 4. Контейнер доски (Занимает всё оставшееся место) */
+
 .board-container {
   display: flex;
-  flex-direction: row; /* Колонки в ряд */
-  gap: 20px;           /* Отступ между колонками */
+  flex-direction: row;
+  gap: 20px;
   padding: 20px;
 
-  /* Высота ровно в экран, без скролла самой страницы */
+
   height: 100vh;
   width: 100vw;
-  box-sizing: border-box; /* Чтобы padding не добавлял лишней ширины */
+  box-sizing: border-box;
 
   background-color: #f4f5f7;
-  overflow-x: auto; /* Если экран слишком узкий, появится скролл */
+  overflow-x: auto;
 }
 
-/* 5. Колонка */
+
 .column {
-  flex: 1;             /* Растягиваем на всё доступное место */
-  min-width: 200px;    /* Минимальный размер, чтобы не сплющило совсем */
-  /* max-width удален! */
+  flex: 1;
+  min-width: 200px;
+
 
   background-color: #ebecf0;
   border-radius: 12px;
@@ -122,15 +122,15 @@ html, body {
   justify-content: space-between;
 }
 
-/* Список задач (Скролл внутри колонки) */
+
 .task-list {
   flex-grow: 1;
-  overflow-y: auto; /* Скроллим только задачи, а не страницу */
+  overflow-y: auto;
   min-height: 50px;
-  padding: 0 4px; /* Место для скроллбара */
+  padding: 0 4px;
 }
 
-/* Стилизация скроллбара внутри колонок (для Chrome/Safari) */
+
 .task-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -142,7 +142,7 @@ html, body {
   border-radius: 20px;
 }
 
-/* Карточка */
+
 .task-card {
   background: white;
   padding: 12px;

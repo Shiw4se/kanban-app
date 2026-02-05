@@ -2,8 +2,8 @@
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { BrowserRouter } from 'react-router-dom';
-import { KanbanBoard } from './KanbanBoard';
-import boardReducer from '../store/boardSlice';
+import { KanbanBoard } from '../src/components/KanbanBoard';
+import boardReducer from '../src/store/boardSlice';
 
 
 const createTestStore = () => {
@@ -14,7 +14,8 @@ const createTestStore = () => {
                 id: 'test-123',
                 title: 'Integration Test Board',
                 tasks: [],
-                loading: false
+                loading: false,
+                error: null
             }
         }
     });
@@ -34,7 +35,7 @@ vi.mock('@hello-pangea/dnd', () => ({
     }, {})
 }));
 
-vi.mock('../hooks/useKanban', () => ({
+vi.mock('../src/hooks/useKanban', () => ({
     useKanban: () => ({
         boardData: {
             title: 'Mocked Board',

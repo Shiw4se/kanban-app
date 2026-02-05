@@ -32,7 +32,14 @@ export const useKanban = () => {
     useEffect(() => {
         if (id) {
             setBoardInput(id);
-            dispatch(fetchBoard(id));
+            dispatch(fetchBoard(id)).then((res) => {
+                if (res.meta.requestStatus === 'rejected' && id === 'default') {
+                    axios.post(`${API_URL}/boards`, { id: 'default', title: 'My Workspace' })
+                        .then(() => {
+                            dispatch(fetchBoard('default'));
+                        });
+                }
+            });
         }
     }, [id, dispatch]);
 

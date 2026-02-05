@@ -1,7 +1,6 @@
 ﻿import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-
 const API_URL = import.meta.env.VITE_API_URL;
 
 export interface Task {
@@ -17,6 +16,7 @@ interface BoardState {
     title: string;
     tasks: Task[];
     loading: boolean;
+    error: string | null;
 }
 
 const initialState: BoardState = {
@@ -24,6 +24,7 @@ const initialState: BoardState = {
     title: '',
     tasks: [],
     loading: false,
+    error: null,
 };
 
 export const fetchBoard = createAsyncThunk('board/fetch', async (id: string) => {
@@ -60,10 +61,21 @@ const boardSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            .addCase(fetchBoard.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
             .addCase(fetchBoard.fulfilled, (state, action) => {
+                state.loading = false;
                 state.id = action.payload.id;
                 state.title = action.payload.title;
                 state.tasks = action.payload.tasks;
+            })
+            .addCase(fetchBoard.rejected, (state) => {
+                state.loading = false;
+                state.error = 'Board not found';
+                state.title = 'Board not found';
+                state.tasks = [];
             })
             .addCase(createTask.fulfilled, (state, action) => {
                 state.tasks.push(action.payload);

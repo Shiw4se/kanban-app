@@ -1,10 +1,11 @@
-﻿import boardReducer, { moveTask } from './boardSlice';
+﻿import boardReducer, { moveTask } from '../src/store/boardSlice';
 
 describe('boardSlice tests', () => {
     const initialState = {
         id: 'test-board',
         title: 'Test Board',
         loading: false,
+        error: null,
         tasks: [
             { id: '1', title: 'Task 1', description: '', status: 'todo' as const, order: 0 },
             { id: '2', title: 'Task 2', description: '', status: 'todo' as const, order: 1 },
@@ -17,6 +18,7 @@ describe('boardSlice tests', () => {
             title: '',
             tasks: [],
             loading: false,
+            error: null,
         });
     });
 

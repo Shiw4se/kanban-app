@@ -1,8 +1,6 @@
-﻿import React, { useEffect, useState } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../store/store';
-import { fetchBoard, updateTaskStatus, moveTaskOptimistic, createTask } from '../store/boardSlice';
+﻿import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { useKanban } from '../hooks/useKanban';
+import './KanbanBoard.css';
 
 const COLUMNS = [
     { id: 'todo', title: 'To Do' },
@@ -10,120 +8,105 @@ const COLUMNS = [
     { id: 'done', title: 'Done' }
 ];
 
-export const KanbanBoard: React.FC = () => {
-    const dispatch = useDispatch<AppDispatch>();
-    const { tasks, boardId, hashedId } = useSelector((state: RootState) => state.board);
-
-
-    const [searchQuery, setSearchQuery] = useState('');
-
-    useEffect(() => {
-        const demoId = 'e7f8g9h0';
-        dispatch(fetchBoard(demoId));
-    }, [dispatch]);
-
-    const onDragEnd = (result: DropResult) => {
-        const { source, destination, draggableId } = result;
-        if (!destination) return;
-        if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-        if (searchQuery) return;
-
-        dispatch(moveTaskOptimistic({
-            id: draggableId,
-            status: destination.droppableId,
-            order: destination.index
-        }));
-
-        dispatch(updateTaskStatus({
-            id: draggableId,
-            status: destination.droppableId,
-            order: destination.index
-        }));
-    };
-
-    const handleAddNewCard = () => {
-        const title = prompt('Enter task title:');
-        if (title && boardId) {
-            dispatch(createTask({
-                title,
-                status: 'todo',
-                boardId,
-                order: tasks.filter(t => t.status === 'todo').length
-            }));
-        }
-    };
-
-    if (!boardId && !hashedId) return <div style={{padding: 20}}>Loading...</div>;
-    const filteredTasks = tasks.filter(task =>
-        task.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+export const KanbanBoard = () => {
+    const { boardData, actions, modal } = useKanban();
 
     return (
-        <div className="app-layout">
+        <div className="kanban-container">
             <div className="top-bar">
-                <h3 style={{ marginRight: 'auto', color: '#172b4d' }}>Kanban Board</h3>
-
                 <input
-                    type="text"
-                    placeholder="Search cards..."
-                    className="search-input"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="board-input"
+                    placeholder="Enter board ID..."
+                    value={boardData.boardInput}
+                    onChange={(e) => boardData.setBoardInput(e.target.value)}
                 />
-
-                <button className="primary-btn" onClick={handleAddNewCard}>
-                    + Add New Card
-                </button>
+                <button className="btn btn-primary" onClick={actions.handleLoadBoard}>Load</button>
+                <button className="btn btn-success" onClick={actions.handleCreateBoard}>New Board</button>
             </div>
 
-            <div className="board-container">
-                <DragDropContext onDragEnd={onDragEnd}>
-                    {COLUMNS.map(column => (
-                        <Droppable key={column.id} droppableId={column.id}>
+            <h1 className="board-title">{boardData.title || 'Loading...'}</h1>
+
+            <DragDropContext onDragEnd={actions.onDragEnd}>
+                <div className="columns-wrapper">
+                    {COLUMNS.map(col => (
+                        <Droppable key={col.id} droppableId={col.id}>
                             {(provided) => (
                                 <div
                                     className="column"
-                                    ref={provided.innerRef}
                                     {...provided.droppableProps}
+                                    ref={provided.innerRef}
                                 >
-                                    <div className="column-header">
-                                        {column.title}
-                                        <span>
-                                            {filteredTasks.filter(t => t.status === column.id).length}
-                    </span>
-                                    </div>
+                                    <h2 className="column-header">{col.title}</h2>
 
-                                    <div className="task-list">
-                                        {filteredTasks
-                                            .filter(task => task.status === column.id)
-                                            .sort((a, b) => a.order - b.order)
-                                            .map((task, index) => (
-                                                <Draggable
-                                                    key={task.id}
-                                                    draggableId={task.id}
-                                                    index={index}
-                                                    isDragDisabled={!!searchQuery}
-                                                >
-                                                    {(provided, snapshot) => (
-                                                        <div
-                                                            className={`task-card ${snapshot.isDragging ? 'dragging' : ''}`}
-                                                            ref={provided.innerRef}
-                                                            {...provided.draggableProps}
-                                                            {...provided.dragHandleProps}
-                                                        >
-                                                            {task.title}
-                                                        </div>
-                                                    )}
-                                                </Draggable>
-                                            ))}
-                                        {provided.placeholder}
-                                    </div>
+                                    {boardData.tasks
+                                        .filter(t => t.status === col.id)
+                                        .map((task, index) => (
+                                            <Draggable key={task.id} draggableId={task.id} index={index}>
+                                                {(provided, snapshot) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        className={`task-card ${snapshot.isDragging ? 'dragging' : ''}`}
+                                                        onClick={() => modal.openEdit(task)}
+                                                    >
+                                                        <div className="task-title">{task.title}</div>
+                                                        {task.description && <div className="task-desc">{task.description}</div>}
+                                                        <div className="edit-icon">✎</div>
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                    {provided.placeholder}
+
+                                    <button className="add-task-btn" onClick={() => modal.openCreate(col.id)}>+</button>
                                 </div>
                             )}
                         </Droppable>
                     ))}
-                </DragDropContext>
-            </div>
+                </div>
+            </DragDropContext>
+
+            {modal.isOpen && (
+                <div className="modal-overlay" onClick={modal.close}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            {modal.mode === 'create' ? 'Create Task' : 'Edit Task'}
+                        </div>
+
+                        <div className="form-group">
+                            <label className="form-label">Title</label>
+                            <input
+                                autoFocus
+                                className="form-input"
+                                value={modal.title}
+                                onChange={e => modal.setTitle(e.target.value)}
+                                placeholder="What needs to be done?"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label className="form-label">Description</label>
+                            <textarea
+                                className="form-textarea"
+                                value={modal.desc}
+                                onChange={e => modal.setDesc(e.target.value)}
+                                placeholder="Add more details..."
+                            />
+                        </div>
+
+                        <div className="modal-buttons">
+                            {modal.mode === 'edit' && (
+                                <button className="btn btn-danger" onClick={modal.remove}>Delete</button>
+                            )}
+                            <button className="btn btn-secondary" onClick={modal.close}>Cancel</button>
+                            <button className="btn btn-primary" onClick={modal.save}>
+                                {modal.mode === 'create' ? 'Create' : 'Save'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -7,21 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Models
 model Board {
-  id        String   @id @default(uuid())
-  hashedId  String   @unique
-  title     String
-  tasks     Task[]
+  id        String   @id
+  title     String   @default("New Board")
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tasks     Task[]
 }
 
 model Task {
   id          String   @id @default(uuid())
   title       String
   description String?
-  status      String
-  order       Int
+  status      String   @default("todo") // todo, in_progress, done
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   boardId     String
   board       Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
 }

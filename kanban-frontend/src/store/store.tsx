@@ -7,6 +7,5 @@ export const store = configureStore({
     },
 });
 
-// Эти типы нужны, чтобы TypeScript понимал структуру данных
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

@@ -9,15 +9,24 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-
 if (!API_URL) {
     throw new Error('API_URL is not defined in .env file!');
+}
+
+
+export interface Task {
+    id: string;
+    title: string;
+    description?: string;
+    status: string;
+    order: number;
 }
 
 export const useKanban = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
+
     const { tasks, title } = useSelector((state: RootState) => state.board);
 
     const [boardInput, setBoardInput] = useState(id || '');
@@ -48,7 +57,14 @@ export const useKanban = () => {
         try {
             await axios.post(`${API_URL}/boards`, { id: newId, title: 'New Board' });
             navigate(`/board/${newId}`);
-        } catch (e) {
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+                console.error('API Error:', error.response?.data || error.message);
+            } else if (error instanceof Error) {
+                console.error('Error:', error.message);
+            } else {
+                console.error('Unknown error:', error);
+            }
             alert('Error creating board');
         }
     };
@@ -77,7 +93,7 @@ export const useKanban = () => {
         setIsModalOpen(true);
     };
 
-    const openEditModal = (task: any) => {
+    const openEditModal = (task: Task) => {
         setModalMode('edit');
         setEditingTaskId(task.id);
         setTaskTitle(task.title);

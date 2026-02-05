@@ -3,12 +3,33 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+if (!API_URL) {
+    throw new Error('API_URL is not defined in .env file!');
+}
+
 export interface Task {
     id: string;
     title: string;
     description: string;
     status: 'todo' | 'in_progress' | 'done';
     order: number;
+}
+
+
+interface CreateTaskPayload {
+    title: string;
+    description: string;
+    status: string;
+    boardId: string;
+    order: number;
+}
+
+interface UpdateTaskPayload {
+    id: string;
+    title?: string;
+    description?: string;
+    status?: string;
+    order?: number;
 }
 
 interface BoardState {
@@ -27,25 +48,61 @@ const initialState: BoardState = {
     error: null,
 };
 
-export const fetchBoard = createAsyncThunk('board/fetch', async (id: string) => {
-    const response = await axios.get(`${API_URL}/boards/${id}`);
-    return response.data;
-});
 
-export const createTask = createAsyncThunk('task/create', async (data: any) => {
-    const response = await axios.post(`${API_URL}/tasks`, data);
-    return response.data;
-});
+const handleError = (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+        return error.response?.data?.message || error.message;
+    }
+    return (error as Error).message || 'Unknown error';
+};
 
-export const updateTask = createAsyncThunk('task/update', async ({ id, ...data }: any) => {
-    const response = await axios.patch(`${API_URL}/tasks/${id}`, data);
-    return response.data;
-});
+export const fetchBoard = createAsyncThunk(
+    'board/fetch',
+    async (id: string, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(`${API_URL}/boards/${id}`);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(handleError(error));
+        }
+    }
+);
 
-export const deleteTask = createAsyncThunk('task/delete', async (id: string) => {
-    await axios.delete(`${API_URL}/tasks/${id}`);
-    return id;
-});
+export const createTask = createAsyncThunk(
+    'task/create',
+    async (data: CreateTaskPayload, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(`${API_URL}/tasks`, data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(handleError(error));
+        }
+    }
+);
+
+export const updateTask = createAsyncThunk(
+    'task/update',
+    async ({ id, ...data }: UpdateTaskPayload, { rejectWithValue }) => {
+        try {
+            const response = await axios.patch(`${API_URL}/tasks/${id}`, data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(handleError(error));
+        }
+    }
+);
+
+export const deleteTask = createAsyncThunk(
+    'task/delete',
+    async (id: string, { rejectWithValue }) => {
+        try {
+            await axios.delete(`${API_URL}/tasks/${id}`);
+            return id;
+        } catch (error) {
+            return rejectWithValue(handleError(error));
+        }
+    }
+);
 
 const boardSlice = createSlice({
     name: 'board',
@@ -54,7 +111,7 @@ const boardSlice = createSlice({
         moveTask: (state, action: PayloadAction<{ id: string, status: string, order: number }>) => {
             const task = state.tasks.find(t => t.id === action.payload.id);
             if (task) {
-                task.status = action.payload.status as any;
+                task.status = action.payload.status as Task['status'];
                 task.order = action.payload.order;
             }
         }
@@ -71,9 +128,9 @@ const boardSlice = createSlice({
                 state.title = action.payload.title;
                 state.tasks = action.payload.tasks;
             })
-            .addCase(fetchBoard.rejected, (state) => {
+            .addCase(fetchBoard.rejected, (state, action) => {
                 state.loading = false;
-                state.error = 'Board not found';
+                state.error = action.payload as string || 'Board not found';
                 state.title = 'Board not found';
                 state.tasks = [];
             })

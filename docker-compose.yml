@@ -1,4 +1,4 @@
-﻿version: '3.8'
+version: '3.8'
 
 services:
   postgres:
@@ -22,6 +22,7 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: "postgresql://user:password@postgres:5432/kanban?schema=public"
+      PORT: 3000
     depends_on:
       - postgres
     volumes:
